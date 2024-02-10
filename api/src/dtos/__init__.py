@@ -4,4 +4,5 @@ from .product import (
   CreateProductRequestDto, 
   CreateProductResponseDto, 
   FindProductByIdResponseDto,
+  FindProductsByStatusResponseDto,
 )

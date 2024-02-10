@@ -15,16 +15,7 @@ class SQLProductRepository(ProductRepository):
         if products is None:
           return []
         product_list = [
-          Product(
-            product_id = str(product.product_id),
-            user_id = str(product.user_id),
-            name = str(product.name),
-            description = str(product.description),
-            price = Decimal(product.price),
-            location = str(product.location),
-            status = str(product.status),
-            is_available = bool(product.is_available)
-          )
+          parse_product(product)
           for product in products
         ]
         return product_list
@@ -60,16 +51,23 @@ class SQLProductRepository(ProductRepository):
         )
         if product is None:
           return None
-        return Product(
-          product_id = str(product.product_id),
-          user_id = str(product.user_id),
-          name = str(product.name),
-          description = str(product.description),
-          price = Decimal(product.price),
-          location = str(product.location),
-          status = str(product.status),
-          is_available = bool(product.is_available)
+        return parse_product(product)
+    except Exception:
+      self.session.rollback()
+      raise ProductRepositoryException(method="find")
+
+  def get_by_status(self, status: str) -> Optional[Product]:
+    try:
+      with self.session as session:
+        products = (
+          session.query(ProductSchema).filter(ProductSchema.status == status).all()
         )
+        if products is None:
+          return None
+        return [
+          parse_product(product)
+          for product in products
+        ]
     except Exception:
       self.session.rollback()
       raise ProductRepositoryException(method="find")
@@ -82,3 +80,15 @@ class SQLProductRepository(ProductRepository):
     # Needs Implementation
     pass
 
+
+def parse_product(product: ProductSchema) -> Product:
+  return Product(
+    product_id = str(product.product_id),
+    user_id = str(product.user_id),
+    name = str(product.name),
+    description = str(product.description),
+    price = Decimal(product.price),
+    location = str(product.location),
+    status = str(product.status),
+    is_available = bool(product.is_available),
+  )

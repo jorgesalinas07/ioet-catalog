@@ -24,3 +24,6 @@ class CreateProductRequestDto(ProductBase):
 
 class CreateProductResponseDto(ProductBase):
     ...
+
+class FindProductsByStatusResponseDto(ListProductResponseDto):
+    ...
