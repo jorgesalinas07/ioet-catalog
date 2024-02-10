@@ -1,4 +1,5 @@
 from app.src.repositories import ProductRepository
+from app.src.use_cases.product.edit.use_case import EditProduct
 from factories.repositories import sql_product_repository
 from app.src.use_cases import ListProducts, FindProductById, CreateProduct, FindProductsByStatus
 
@@ -16,3 +17,6 @@ def create_product_use_case() -> CreateProduct:
 
 def find_product_by_status_use_case() -> FindProductsByStatus:
   return FindProductsByStatus(get_product_repository())
+
+def edit_product_use_case() -> EditProduct:
+  return EditProduct(get_product_repository())

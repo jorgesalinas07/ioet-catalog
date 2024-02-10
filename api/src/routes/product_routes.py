@@ -12,6 +12,9 @@ from app.src.use_cases import (
     FindProductsByStatus,
     FindProductsByStatusResponse,
     FindProductsByStatusRequest,
+    EditProduct,
+    EditProductRequest,
+    EditProductResponse,
 )
 from ..dtos import (
     ProductBase,
@@ -20,14 +23,16 @@ from ..dtos import (
     CreateProductResponseDto,
     FindProductByIdResponseDto,
     FindProductsByStatusResponseDto,
+    EditProductResponseDto,
+    EditProductRequestDto,
 )
 from factories.use_cases import (
     list_product_use_case, 
     find_product_by_id_use_case,
     create_product_use_case,
     find_product_by_status_use_case,
+    edit_product_use_case,
 )
-from app.src.core.models import Product
 
 product_router = APIRouter(prefix="/products")
 
@@ -73,8 +78,30 @@ async def get_products_by_status(
     status: str = Query(None, description="Filter products by status (e.g., 'New', 'Used', 'For parts')"),
     use_case: FindProductsByStatus = Depends(find_product_by_status_use_case),
 ) -> FindProductsByStatusResponse:
+    # Implement status code error handling in future tickets
     response = use_case(FindProductsByStatusRequest(status=status))
     response_dto: FindProductsByStatusResponseDto = FindProductsByStatusResponseDto(
         products= [ProductBase(**product._asdict()) for product in response.products]
     )
+    return response_dto
+
+@product_router.put("/{product_id}", response_model=EditProductResponseDto)
+async def edit_product(
+    product_id: str,
+    request: EditProductRequestDto,
+    use_case: EditProduct = Depends(edit_product_use_case),
+) -> EditProductResponse:
+    # Implement status code error handling in future tickets
+    response = use_case(EditProductRequest(
+        product_id=product_id,
+        user_id=request.user_id,
+        name=request.name,
+        description=request.description,
+        price=request.price,
+        location=request.location,
+        status=request.status,
+        is_available=request.is_available
+    ))
+
+    response_dto: FindProductByIdResponseDto = FindProductByIdResponseDto(**response._asdict())
     return response_dto
