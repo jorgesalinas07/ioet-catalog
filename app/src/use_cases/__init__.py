@@ -13,4 +13,7 @@ from .product import (
   FindProductsByStatus,
   FindProductsByStatusResponse,
   FindProductsByStatusRequest,
+  EditProductRequest,
+  EditProductResponse,
+  EditProduct,
 )

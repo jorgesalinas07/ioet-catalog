@@ -27,3 +27,15 @@ class CreateProductResponseDto(ProductBase):
 
 class FindProductsByStatusResponseDto(ListProductResponseDto):
     ...
+
+class EditProductResponseDto(ProductBase):
+    ...
+
+class EditProductRequestDto(ProductBase):
+    user_id: str
+    name: str
+    description: str | None
+    price: Decimal
+    location: str
+    status: str
+    is_available: bool

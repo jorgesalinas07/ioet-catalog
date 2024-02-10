@@ -61,3 +61,6 @@ win_start:  ## Starts the debug of the program in windows environment
 	.venv\Scripts\activate.bat && \
 	.env && \
 	uvicorn main:app --reload
+
+unit_test:
+	python -m pytest -v app/tests/unit
