@@ -92,8 +92,15 @@ class SQLProductRepository(ProductRepository):
       raise ProductRepositoryException(method="edit")
 
   def delete(self, product_id: str) -> Product:
-    # Needs Implementation
-    pass
+    try:
+      with self.session as session:
+        product_ref = session.query(ProductSchema).filter(ProductSchema.product_id == product_id).first()
+        session.delete(product_ref)
+        session.commit()
+        return parse_product(product_ref)
+    except Exception:
+      self.session.rollback()
+      raise ProductRepositoryException(method="delete")
 
 
 def parse_product(product: ProductSchema) -> Product:
