@@ -1,6 +1,4 @@
-from typing import List
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.src.use_cases import (
     ListProducts, 
@@ -10,7 +8,10 @@ from app.src.use_cases import (
     FindProductByIdRequest, 
     CreateProduct, 
     CreateProductResponse, 
-    CreateProductRequest
+    CreateProductRequest,
+    FindProductsByStatus,
+    FindProductsByStatusResponse,
+    FindProductsByStatusRequest,
 )
 from ..dtos import (
     ProductBase,
@@ -18,11 +19,13 @@ from ..dtos import (
     CreateProductRequestDto,
     CreateProductResponseDto,
     FindProductByIdResponseDto,
+    FindProductsByStatusResponseDto,
 )
 from factories.use_cases import (
     list_product_use_case, 
     find_product_by_id_use_case,
     create_product_use_case,
+    find_product_by_status_use_case,
 )
 from app.src.core.models import Product
 
@@ -63,4 +66,15 @@ async def create_product(
         is_available=request.is_available
     ))
     response_dto: CreateProductResponseDto = CreateProductResponseDto(**response._asdict())
+    return response_dto
+
+@product_router.get("", response_model=FindProductsByStatusResponseDto)
+async def get_products_by_status(
+    status: str = Query(None, description="Filter products by status (e.g., 'New', 'Used', 'For parts')"),
+    use_case: FindProductsByStatus = Depends(find_product_by_status_use_case),
+) -> FindProductsByStatusResponse:
+    response = use_case(FindProductsByStatusRequest(status=status))
+    response_dto: FindProductsByStatusResponseDto = FindProductsByStatusResponseDto(
+        products= [ProductBase(**product._asdict()) for product in response.products]
+    )
     return response_dto
