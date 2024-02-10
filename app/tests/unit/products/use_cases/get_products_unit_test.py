@@ -1,17 +1,26 @@
 import pytest
 from app.src.exceptions.business.product import ProductBusinessException, ProductNotFoundException
 from app.src.exceptions.repository.product import ProductRepositoryException
-from app.src.use_cases.product.edit.request import EditProductRequest
-from app.src.use_cases.product.edit.response import EditProductResponse
-from app.src.use_cases.product.edit.use_case import EditProduct
-from app.src.use_cases.product.get_by_status.request import FindProductsByStatusRequest
-from app.src.use_cases.product.get_by_status.response import FindProductsByStatusResponse
-from app.src.use_cases.product.get_by_status.use_case import FindProductsByStatus
+from app.src.use_cases.product.edit import (
+    EditProductRequest,
+    EditProductResponse,
+    EditProduct
+)
+from app.src.use_cases.product.get_by_status import (
+    FindProductsByStatusRequest,
+    FindProductsByStatusResponse,
+    FindProductsByStatus
+)
+from app.src.use_cases.product.delete import (
+    DeleteProduct,
+    DeleteProductRequest,
+    DeleteProductResponse,
+)
 from app.src.core.models._product import Product
 
 # Implement fixtures and faker in future tickets
 product = Product(
-        product_id = '1',
+        product_id = 1,
         user_id = '1',
         name = 'fake_name_1',
         description = 'fake_description_1',
@@ -135,6 +144,43 @@ def test_edit_product_raise_product_not_found_exception_when_no_product_in_datab
         status='fake_status',
         is_available=True,
     )
+
+    with pytest.raises(ProductNotFoundException):
+        use_case(request=request)
+
+def test_delete_product_return_deleted_products_successfully(mocker):
+    product_repository = mocker.Mock()
+    product_repository.get_by_id = mocker.Mock(return_value=product)
+    product_repository.delete = mocker.Mock(return_value=product)
+    use_case = DeleteProduct(product_repository)
+    request = DeleteProductRequest(product_id=1)
+
+    response = use_case(request=request)
+
+    assert isinstance(response, DeleteProductResponse)
+    assert response.product_id == product.product_id
+
+def test_delete_product_raise_product_repository_exception_when_database_error(
+    mocker
+):
+    product_repository = mocker.Mock()
+    product_repository.get_by_id = mocker.Mock(return_value=product)
+    product_repository.delete = mocker.Mock(side_effect=ProductRepositoryException(method="delete"))
+    use_case = DeleteProduct(product_repository)
+    request = DeleteProductRequest(product_id=1)
+
+    with pytest.raises(ProductBusinessException) as exc_info:
+        use_case(request=request)
+
+    assert str(exc_info.value) == "Exception while executing delete in Product"
+
+def test_delete_product_raise_product_not_found_exception_when_no_product_in_database(
+    mocker
+):
+    product_repository = mocker.Mock()
+    product_repository.get_by_id = mocker.Mock(return_value=None)
+    use_case = DeleteProduct(product_repository)
+    request = DeleteProductRequest(product_id=1)
 
     with pytest.raises(ProductNotFoundException):
         use_case(request=request)

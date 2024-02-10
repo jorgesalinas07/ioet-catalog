@@ -39,3 +39,6 @@ class EditProductRequestDto(ProductBase):
     location: str
     status: str
     is_available: bool
+
+class DeleteProductResponseDto(ProductBase):
+    ...
